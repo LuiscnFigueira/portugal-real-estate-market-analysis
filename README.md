@@ -1,47 +1,119 @@
-#  Análise do Mercado Imobiliário Português
+# Análise e Previsão Local de Preços de Imóveis em Portugal
 
-##  Descrição do Projeto
+## Descrição
 
-Este projeto tem como objetivo analisar o mercado imobiliário português e identificar os principais fatores que influenciam o preço dos imóveis em Portugal.
+Este projeto de Ciência de Dados tem como objetivo analisar anúncios imobiliários em Portugal e preparar uma base consistente para a previsão local de preços de imóveis. O trabalho segue a metodologia CRISP-DM e privilegia um fluxo reprodutível, documentado e executável localmente, sem recurso a APIs externas de inteligência artificial.
 
-O projeto segue a metodologia **CRISP-DM (Cross Industry Standard Process for Data Mining)** e utiliza técnicas de análise exploratória de dados, preparação de dados, machine learning e visualização de resultados para transformar dados imobiliários em conhecimento útil para apoiar a tomada de decisão.
-
-O conjunto de dados utilizado contém mais de **135 mil anúncios imobiliários** distribuídos por diferentes regiões de Portugal e inclui informações sobre preço, localização, áreas, certificação energética, características do imóvel e outras variáveis relevantes.
+A fase atual corresponde à preparação inicial do projeto: carregamento do dataset, normalização de variáveis, conversão de tipos, criação de variáveis derivadas, geração de uma primeira versão processada e documentação das decisões necessárias para as próximas etapas.
 
 ## Objetivos
 
-Os principais objetivos deste projeto são:
+- Compreender a estrutura do mercado imobiliário português a partir de dados de anúncios.
+- Identificar fatores potencialmente associados ao preço anunciado dos imóveis.
+- Preparar dados coerentes para análise exploratória, preparação final e modelação.
+- Evitar fuga de informação entre variáveis derivadas e variável alvo.
+- Desenvolver, numa fase posterior, modelos locais de machine learning para estimar preços.
 
-* Analisar o mercado imobiliário português;
-* Identificar os fatores que mais influenciam o preço dos imóveis;
-* Explorar diferenças entre distritos, cidades e tipologias de imóveis;
-* Desenvolver modelos preditivos para estimar o preço dos imóveis;
-* Produzir insights relevantes para apoiar a tomada de decisão.
+## Dataset
 
-##  Dataset
+| Campo | Informação |
+|---|---|
+| Nome | Portugal Real Estate 2024 |
+| Fonte | Kaggle |
+| Ficheiro original | `data/raw/portugal_listinigs.csv` |
+| Observações iniciais | 135 536 anúncios |
+| Variáveis originais | 25 |
+| Variável alvo | `price` |
 
-**Nome:** Portugal Real Estate 2024
+O ficheiro em `data/raw/` é tratado como fonte original e não deve ser alterado. Dados preparados deverão ser guardados em `data/processed/`.
 
-**Fonte:** Kaggle
+## Artefactos Atuais
 
-**Número de observações:** 135 536
-
-**Número de variáveis:** 25
+| Artefacto | Estado |
+|---|---|
+| Dataset original | `data/raw/portugal_listinigs.csv` |
+| Dataset processado inicial | `data/processed/portugal_listings_initial_clean.csv` |
+| Pipeline de preparação | `src/data/make_dataset.py` |
+| Funções reutilizáveis | `src/data/preprocess.py`, `src/features/build_features.py` |
+| Notebooks organizados | `notebooks/01_inicializacao.ipynb`, `notebooks/02_data_understanding.ipynb` |
+| Teste inicial | `tests/test_preprocess.py` |
 
 ## Metodologia
 
-O projeto segue a metodologia **CRISP-DM** e encontra-se dividido nas seguintes etapas:
+O projeto segue a metodologia CRISP-DM:
 
-1. Compreensão do Negócio
-2. Compreensão dos Dados
-3. Análise Exploratória dos Dados
-4. Preparação dos Dados
-5. Modelação
-6. Avaliação
-7. Apresentação dos Resultados
+1. Compreensão do negócio
+2. Compreensão dos dados
+3. Preparação dos dados
+4. Modelação
+5. Avaliação
+6. Apresentação e utilização local dos resultados
+
+Nesta fase 01, o foco está nas etapas iniciais de compreensão do negócio, organização do projeto e preparação preliminar dos dados. Ainda não existem resultados de modelação a reportar.
+
+## Estrutura do Projeto
+
+| Pasta/Ficheiro | Finalidade |
+|---|---|
+| `data/raw/` | Dados originais, sem alterações manuais |
+| `data/processed/` | Dados tratados e versões intermédias |
+| `docs/` | Documentação técnica do projeto |
+| `notebooks/` | Notebooks por fase de trabalho |
+| `reports/figures/` | Gráficos e outputs visuais |
+| `src/` | Código reutilizável, a estruturar nas próximas fases |
+| `tests/` | Testes simples para funções reutilizáveis |
+| `requirements.txt` | Dependências do ambiente |
+
+## Execução Local
+
+Instalar dependências:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -r requirements.txt
+```
+
+Gerar o dataset processado inicial:
+
+```bash
+python3 -m src.data.make_dataset
+```
+
+Executar testes:
+
+```bash
+python3 -m pytest tests
+```
+
+## Notebooks
+
+| Notebook | Finalidade |
+|---|---|
+| `notebooks/01_inicializacao.ipynb` | Inicialização, preparação inicial e geração do dataset processado |
+| `notebooks/02_data_understanding.ipynb` | Compreensão dos dados, qualidade, descritivas e agregações iniciais |
+| `notebooks/archive/inicializacao_legacy.ipynb` | Notebook original arquivado como referência da primeira exploração |
+
+## Documentação
+
+- `docs/01_project_overview.md` - visão geral do projeto
+- `docs/02_business_understanding.md` - problema, objetivos e critérios de sucesso
+- `docs/03_data_understanding.md` - compreensão dos dados
+- `docs/04_data_dictionary.md` - dicionário de variáveis
+- `docs/05_data_quality.md` - qualidade dos dados
+- `docs/06_data_preparation.md` - preparação inicial dos dados
+- `docs/07_feature_engineering.md` - variáveis derivadas e risco de fuga de informação
+- `docs/08_next_steps.md` - plano de trabalho recomendado
+- `docs/09_statistical_validation.md` - validação estatística e cuidados de interpretação
+- `docs/10_reproducibility.md` - instruções de reprodutibilidade
+- `docs/11_processed_data_audit.md` - auditoria do dataset processado
+
+## Estado Atual
+
+O projeto encontra-se em fase inicial, mas já contém uma pipeline reutilizável para gerar uma primeira versão processada do dataset. Foram documentadas as decisões principais de preparação e estão definidos os cuidados necessários antes da modelação, nomeadamente tratamento de valores em falta, valores extremos, codificação de categorias, separação treino-teste e definição de pipelines locais.
 
 ## Autor
 
-**Luís Figueira**
+Luís Figueira
 
-**Última atualização:** 16/06/2026
+Última atualização: 16/06/2026
