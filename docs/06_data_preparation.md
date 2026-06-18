@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Preparar o dataset para análise exploratória e modelação futura, garantindo nomes consistentes, tipos adequados e regras explícitas para valores inválidos. Esta preparação é preliminar e deve evoluir para um pipeline reutilizável nas próximas fases.
+Preparar o dataset para análise exploratória, feature engineering e modelação futura, garantindo nomes consistentes, tipos adequados e regras explícitas para valores inválidos. Esta fase cria uma versão preparada e auditável do dataset, mantendo os dados originais intactos.
 
 ## Fonte de Dados
 
@@ -79,13 +79,13 @@ Estas regras são conservadoras: removem apenas casos incompatíveis com o objet
 
 ## Duplicados
 
-Foram identificados 8 913 duplicados exatos. No notebook de inicialização, a remoção foi aplicada na versão em memória para preparar a análise preliminar. O ficheiro original em `data/raw/` não foi alterado.
+Foram identificados 8 913 duplicados exatos na análise inicial. A remoção é aplicada apenas nas versões processadas/preparadas, mantendo o ficheiro original em `data/raw/` intacto.
 
 Na próxima fase, esta regra deve ser reproduzida num pipeline e guardada apenas numa versão processada em `data/processed/`.
 
 ## Preço Ausente
 
-Foram identificados 300 registos sem valor em `price`. Como `price` é a variável alvo do projeto, estes registos foram removidos na versão em memória usada para análise preliminar.
+Foram identificados 300 registos sem valor em `price`. Como `price` é a variável alvo do projeto, estes registos são removidos nas versões usadas para análise, preparação e modelação futura.
 
 Esta remoção não altera o ficheiro original e deve ser repetida de forma explícita no pipeline que vier a gerar o dataset processado.
 
