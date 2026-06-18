@@ -20,18 +20,19 @@ Construir uma base analítica fiável para estudar o mercado imobiliário portug
 - Carregar o dataset original sem alterar a fonte em `data/raw/`.
 - Uniformizar nomes de variáveis para `snake_case`.
 - Converter datas, categorias, booleanos e inteiros para tipos adequados.
-- Criar variáveis derivadas úteis para análise exploratória.
+- Criar variáveis derivadas úteis para análise exploratória e modelação futura.
 - Identificar riscos de qualidade de dados e de fuga de informação.
 - Preparar o caminho para pipelines reprodutíveis de preparação e modelação.
 
-## Âmbito da Fase 01
+## Âmbito Atual
 
 | Área | Incluído nesta fase | Fora desta fase |
 |---|---|---|
-| Organização | Estrutura documental e enquadramento CRISP-DM | Refatoração completa do código |
-| Dados | Leitura, renomeação, tipos e variáveis derivadas iniciais | Tratamento final de valores em falta e valores extremos |
-| Análise | Preparação para análise exploratória | Conclusões analíticas definitivas |
-| Modelação | Definição dos cuidados e próximos passos | Treino e comparação final de modelos |
+| Organização | Estrutura documental, notebooks numerados e código reutilizável | Aplicação final ou dashboard |
+| Dados | Leitura, renomeação, tipos, preparação estruturada e datasets processados | Alteração manual de `data/raw/` |
+| Feature engineering | Features de área, divisões, amenidades, tempo, localização e missingness | Encoding final e imputação dentro de pipeline |
+| Análise | Diagnóstico de qualidade e preparação para validação estatística | Conclusões causais |
+| Modelação | Definição dos cuidados e variáveis candidatas | Treino e comparação final de modelos |
 | Entrega | Documentação profissional e coerente | Aplicação final ou deployment |
 
 ## Dataset
@@ -67,4 +68,4 @@ Construir uma base analítica fiável para estudar o mercado imobiliário portug
 
 ## Estado Atual
 
-O trabalho realizado até ao momento corresponde à fase inicial do projeto. Existem transformações preliminares no notebook de inicialização e documentação de suporte para orientar as etapas seguintes. Ainda não existem modelos treinados nem métricas finais de desempenho.
+O trabalho realizado até ao momento cobre as fases de inicialização, compreensão dos dados, preparação estruturada e feature engineering. Já existem datasets processados em `data/processed/`, código reutilizável em `src/`, testes automatizados e documentação técnica. Ainda não existem modelos treinados nem métricas finais de desempenho.
