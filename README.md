@@ -4,7 +4,7 @@
 
 Este projeto de Ciência de Dados tem como objetivo analisar anúncios imobiliários em Portugal e preparar uma base consistente para a previsão local de preços de imóveis. O trabalho segue a metodologia CRISP-DM e privilegia um fluxo reprodutível, documentado e executável localmente, sem recurso a APIs externas de inteligência artificial.
 
-A fase atual corresponde à preparação inicial do projeto: carregamento do dataset, normalização de variáveis, conversão de tipos, criação de variáveis derivadas, geração de uma primeira versão processada e documentação das decisões necessárias para as próximas etapas.
+A fase atual corresponde à preparação e feature engineering do projeto: carregamento do dataset, normalização de variáveis, conversão de tipos, validação conservadora, criação de variáveis derivadas, geração de datasets processados e documentação das decisões necessárias para modelação futura.
 
 ## Objetivos
 
@@ -33,10 +33,12 @@ O ficheiro em `data/raw/` é tratado como fonte original e não deve ser alterad
 |---|---|
 | Dataset original | `data/raw/portugal_listinigs.csv` |
 | Dataset processado inicial | `data/processed/portugal_listings_initial_clean.csv` |
+| Dataset preparado | `data/processed/portugal_listings_prepared.csv.gz` |
+| Dataset com features | `data/processed/portugal_listings_features.csv.gz` |
 | Pipeline de preparação | `src/data/make_dataset.py` |
-| Funções reutilizáveis | `src/data/preprocess.py`, `src/features/build_features.py` |
-| Notebooks organizados | `notebooks/01_inicializacao.ipynb`, `notebooks/02_data_understanding.ipynb` |
-| Teste inicial | `tests/test_preprocess.py` |
+| Funções reutilizáveis | `src/data/preprocess.py`, `src/data/prepare.py`, `src/features/build_features.py` |
+| Notebooks organizados | `notebooks/01_inicializacao.ipynb`, `notebooks/02_data_understanding.ipynb`, `notebooks/03_data_preparation.ipynb`, `notebooks/04_feature_engineering.ipynb` |
+| Testes | `tests/test_preprocess.py` |
 
 ## Metodologia
 
@@ -49,7 +51,7 @@ O projeto segue a metodologia CRISP-DM:
 5. Avaliação
 6. Apresentação e utilização local dos resultados
 
-Nesta fase 01, o foco está nas etapas iniciais de compreensão do negócio, organização do projeto e preparação preliminar dos dados. Ainda não existem resultados de modelação a reportar.
+Até à fase 04, o foco está na compreensão dos dados, preparação estruturada e criação de features. Ainda não existem resultados de modelação a reportar.
 
 ## Estrutura do Projeto
 
@@ -92,6 +94,8 @@ python3 -m pytest tests
 |---|---|
 | `notebooks/01_inicializacao.ipynb` | Inicialização, preparação inicial e geração do dataset processado |
 | `notebooks/02_data_understanding.ipynb` | Compreensão dos dados, qualidade, descritivas e agregações iniciais |
+| `notebooks/03_data_preparation.ipynb` | Preparação estruturada, missing indicators e flags de outliers |
+| `notebooks/04_feature_engineering.ipynb` | Criação de features candidatas e política de leakage |
 | `notebooks/archive/inicializacao_legacy.ipynb` | Notebook original arquivado como referência da primeira exploração |
 
 ## Documentação
@@ -110,10 +114,10 @@ python3 -m pytest tests
 
 ## Estado Atual
 
-O projeto encontra-se em fase inicial, mas já contém uma pipeline reutilizável para gerar uma primeira versão processada do dataset. Foram documentadas as decisões principais de preparação e estão definidos os cuidados necessários antes da modelação, nomeadamente tratamento de valores em falta, valores extremos, codificação de categorias, separação treino-teste e definição de pipelines locais.
+O projeto já contém notebooks executados até à fase de feature engineering, datasets processados comprimidos para GitHub/Kaggle, código reutilizável em `src/` e testes automatizados. O próximo passo recomendado é validação estatística e baseline de machine learning com pipelines locais.
 
 ## Autor
 
 Luís Figueira
 
-Última atualização: 16/06/2026
+Última atualização: 18/06/2026
