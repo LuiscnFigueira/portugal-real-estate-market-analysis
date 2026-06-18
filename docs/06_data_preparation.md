@@ -10,10 +10,14 @@ Preparar o dataset para análise exploratória e modelação futura, garantindo 
 |---|---|
 | Ficheiro original | `data/raw/portugal_listinigs.csv` |
 | Ficheiro processado inicial | `data/processed/portugal_listings_initial_clean.csv` |
+| Ficheiro preparado | `data/processed/portugal_listings_prepared.csv` |
+| Ficheiro preparado comprimido para GitHub | `data/processed/portugal_listings_prepared.csv.gz` |
 | Observações iniciais | 135 536 |
 | Variáveis originais | 25 |
 | Observações processadas | 126 242 |
 | Variáveis processadas | 29 |
+| Observações preparadas | 126 242 |
+| Variáveis preparadas | 49 |
 | Variável alvo | `price` |
 
 O ficheiro original em `data/raw/` não deve ser alterado. Qualquer versão tratada deve ser gravada em `data/processed/`.
@@ -29,6 +33,8 @@ O ficheiro original em `data/raw/` não deve ser alterado. Qualquer versão trat
 | Converter inteiros para `Int64` | Permite representar inteiros com valores nulos |
 | Remover duplicados exatos na versão processada | Evita contagens repetidas de anúncios idênticos sem alterar `data/raw/` |
 | Marcar preços e áreas não positivas como nulos | Valores iguais ou inferiores a zero não são válidos para análise de preço |
+| Criar indicadores de valores em falta | Preserva informação sobre ausência sem imputação prematura |
+| Criar flags de outliers por IQR | Sinaliza valores extremos sem remover casos potencialmente legítimos |
 
 ## Renomeação de Colunas
 
@@ -85,24 +91,45 @@ Esta remoção não altera o ficheiro original e deve ser repetida de forma expl
 
 ## Estado da Preparação
 
-A preparação atual cria uma base mais coerente para análise e já existe uma pipeline reutilizável em `src/` para gerar o dataset processado inicial.
+A preparação atual cria uma base mais coerente para análise e já existe código reutilizável em `src/` para gerar o dataset processado inicial e a versão preparada.
 
-O comando principal é:
+O comando principal para gerar a versão processada inicial é:
 
 ```bash
 python3 -m src.data.make_dataset
 ```
+
+A versão preparada foi criada no notebook:
+
+```text
+notebooks/03_data_preparation.ipynb
+```
+
+Para upload no GitHub via interface web, deve ser usado o ficheiro comprimido
+`data/processed/portugal_listings_prepared.csv.gz`, porque o CSV sem compressão
+ultrapassa o limite de 25 MB do upload no browser.
 
 Validações observadas no dataset processado:
 
 | Validação | Resultado |
 |---|---:|
 | Linhas | 126 242 |
-| Colunas | 29 |
+| Colunas na versão inicial | 29 |
+| Colunas na versão preparada | 49 |
 | Valores em falta em `price` | 0 |
 | Duplicados exatos | 0 |
 | Valores infinitos em `price_m2` | 0 |
 | Valores não positivos em `total_area` | 0 |
+
+Validações adicionais da versão preparada:
+
+| Validação | Resultado |
+|---|---:|
+| Indicadores de valores em falta criados | 11 |
+| Flags de outliers por IQR criadas | 9 |
+| Outliers sinalizados em `price` | 10 582 |
+
+Os outliers foram sinalizados, mas não removidos. Esta decisão é intencional, porque imóveis extremos podem ser legítimos dependendo do tipo de imóvel, localização e área.
 
 Antes do treino de modelos será necessário definir:
 
