@@ -8,7 +8,7 @@ Este documento explica como executar o projeto noutro computador de forma consis
 
 - Python 3.9 ou superior.
 - Dependências listadas em `requirements.txt`.
-- Ficheiro original em `data/raw/portugal_listinigs.csv`.
+- Ficheiro original em `data/raw/portugal_listinigs.csv`, ou ficheiros processados comprimidos disponíveis em `data/processed/`.
 
 ## Instalação
 
@@ -43,6 +43,8 @@ Depois de instalar as dependências, os notebooks numerados podem ser executados
 ```bash
 python3 -m jupyter nbconvert --execute --inplace notebooks/01_inicializacao.ipynb
 python3 -m jupyter nbconvert --execute --inplace notebooks/02_data_understanding.ipynb
+python3 -m jupyter nbconvert --execute --inplace notebooks/03_data_preparation.ipynb
+python3 -m jupyter nbconvert --execute --inplace notebooks/04_feature_engineering.ipynb
 ```
 
 ## Executar Notebooks
@@ -51,6 +53,8 @@ A ordem recomendada é:
 
 1. `notebooks/01_inicializacao.ipynb`
 2. `notebooks/02_data_understanding.ipynb`
+3. `notebooks/03_data_preparation.ipynb`
+4. `notebooks/04_feature_engineering.ipynb`
 
 O notebook `notebooks/archive/inicializacao_legacy.ipynb` foi mantido como referência da primeira exploração, mas os notebooks numerados devem ser usados como fluxo principal.
 
@@ -68,6 +72,10 @@ Depois de gerar o dataset processado inicial, devem verificar-se os seguintes re
 | Duplicados exatos no processado | 0 |
 | Valores infinitos em `price_m2` | 0 |
 | Valores não positivos em `total_area` | 0 |
+| Linhas no dataset preparado | 126 242 |
+| Colunas no dataset preparado | 49 |
+| Linhas no dataset de features | 126 242 |
+| Colunas no dataset de features | 71 |
 
 ## Cuidados
 
@@ -75,3 +83,4 @@ Depois de gerar o dataset processado inicial, devem verificar-se os seguintes re
 - Regenerar dados processados sempre a partir do código em `src/`.
 - Usar caminhos relativos nos notebooks e scripts.
 - Não usar `price_m2` como variável explicativa em modelos que preveem `price`.
+- Usar os ficheiros `.csv.gz` para upload no GitHub quando o CSV sem compressão ultrapassar 25 MB.
