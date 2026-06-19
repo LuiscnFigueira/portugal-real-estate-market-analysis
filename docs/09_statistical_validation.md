@@ -2,222 +2,138 @@
 
 ## Objetivo
 
-Este documento valida a leitura estatística inicial do ficheiro `data/raw/portugal_listinigs.csv` e identifica cuidados necessários antes da análise inferencial, comparação entre grupos e modelação preditiva.
+Validar estatisticamente o dataset com features antes da modelação, avaliando a distribuição da variável alvo, associações numéricas, diferenças entre grupos e multicolinearidade.
 
-A validação foi feita diretamente sobre o ficheiro bruto, sem alterar `data/raw/`. Os resultados abaixo devem ser lidos como diagnóstico estatístico preliminar e não como conclusões causais sobre o mercado imobiliário.
+Esta fase é implementada no notebook `notebooks/05_statistical_validation.ipynb` e no módulo reutilizável `src/analysis/statistical_validation.py`.
 
 ## Base Validada
 
 | Indicador | Valor |
 |---|---:|
-| Linhas | 135 536 |
-| Colunas | 25 |
-| Unidade de observação | Anúncio imobiliário |
-| Duplicados exatos | 8 913 |
-| Percentagem de duplicados exatos | 6,58% |
-| Registos com `Price` preenchido | 135 236 |
-| Registos sem `Price` | 300 |
+| Dataset | `data/processed/portugal_listings_features.csv.gz` |
+| Linhas | 126 242 |
+| Colunas | 71 |
+| Variável alvo | `price` |
+| Alvo transformado | `log_price` |
+| Valores em falta em `price` | 0 |
+| Valores em falta em `log_price` | 0 |
 
-As métricas documentadas em `03_data_understanding.md` e `05_data_quality.md` são coerentes com a validação direta do ficheiro bruto.
+A validação foi feita sobre a versão com features criada na fase 04. Os resultados devem ser lidos como suporte à modelação, não como prova causal sobre o mercado imobiliário.
 
-## Validação das Métricas Descritivas de `Price`
+## Distribuição de `price`
 
 | Estatística | Valor |
 |---|---:|
+| Média | 370 785,56 |
+| Desvio-padrão | 3 935 295 |
 | Mínimo | 1 |
-| Percentil 1 | 5 500 |
+| Percentil 1 | 5 999,41 |
 | Percentil 5 | 20 000 |
-| Percentil 25 | 84 000 |
+| Percentil 25 | 85 000 |
 | Mediana | 210 000 |
-| Média | 368 137,45 |
-| Percentil 75 | 395 000 |
+| Percentil 75 | 390 000 |
 | Percentil 90 | 750 000 |
-| Percentil 95 | 1 175 000 |
-| Percentil 99 | 2 745 000 |
-| Percentil 99,9 | 7 200 000 |
+| Percentil 95 | 1 198 947 |
+| Percentil 99 | 2 750 000 |
 | Máximo | 1 380 000 000 |
+| Assimetria | 341,37 |
+| Curtose | 119 660,5 |
 
-A distribuição de `Price` é fortemente assimétrica à direita. A média é muito superior à mediana e o desvio-padrão é inflacionado por valores extremos. Para comunicação estatística e análise exploratória, a mediana, os quartis e percentis superiores são mais robustos do que a média.
+A distribuição de `price` continua extremamente assimétrica à direita. A média é bastante superior à mediana e o máximo continua a dominar estatísticas sensíveis a valores extremos.
 
-O valor máximo de 1 380 000 000 euros não deve ser removido automaticamente apenas por ser extremo. Deve ser tratado como observação de alto risco estatístico: pode representar erro de recolha, erro de escala, anúncio excepcional ou registo não comparável com o resto da amostra.
+Recomendação:
 
-## Efeito dos Duplicados nas Descritivas
+- comunicar resultados com mediana, quartis e percentis;
+- usar `log_price` como candidato forte para alvo transformado na modelação;
+- não remover outliers automaticamente sem análise por contexto.
 
-| Base | Linhas | `Price` preenchido | Mediana | Média | P75 | P95 | P99 | Máximo |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Bruta | 135 536 | 135 236 | 210 000 | 368 137,45 | 395 000 | 1 175 000 | 2 745 000 | 1 380 000 000 |
-| Sem duplicados exatos | 126 623 | 126 340 | 210 000 | 370 694,20 | 390 000 | 1 195 050 | 2 750 000 | 1 380 000 000 |
+## Associações Numéricas com `log_price`
 
-A remoção de duplicados exatos altera pouco a mediana e os percentis principais, mas deve ser aplicada no dataset processado para evitar repetição artificial de anúncios idênticos. Como o máximo se mantém, os valores extremos não são explicados apenas por duplicação.
+As correlações foram calculadas com Pearson e Spearman. A ordenação abaixo usa Spearman, por ser mais adequada a relações monotónicas e menos sensível a extremos.
 
-## Interpretação de Outliers
-
-Pela regra do intervalo interquartil aplicada a `Price`, o limite superior exploratório é 861 500 euros. Existem 10 589 registos acima desse limite, correspondendo a 7,81% do dataset bruto. Este critério é útil para sinalização, mas não deve ser usado como regra automática de remoção.
-
-Em imobiliário, preços elevados podem ser legítimos quando associados a localizações premium, edifícios, hotéis, quintas, terrenos de grande dimensão ou propriedades comerciais. O tratamento de valores extremos deve ser contextual, pelo menos por `Type`, `District` e área disponível.
-
-Exemplos de risco observados:
-
-- `Price` máximo de 1 380 000 000 euros associado a uma moradia no distrito de Faro, muito acima do percentil 99,9.
-- Registos de hotéis, edifícios e terrenos com preços entre 20 000 000 e 36 000 000 euros, que podem ser plausíveis mas não comparáveis com apartamentos ou moradias comuns.
-- Áreas máximas extremamente elevadas, incluindo `TotalArea` de 61 420 070 000 e `LotSize` de 992 301 000, que sugerem possível erro de unidade, erro de digitação ou registos especiais.
-
-Recomendação: criar indicadores de outlier e analisar os casos extremos antes de escolher entre exclusão, winsorization, transformação logarítmica ou modelos robustos.
-
-## Valores em Falta
-
-Os valores em falta não parecem ter o mesmo significado em todas as variáveis. Algumas ausências podem ser estruturais, por exemplo `LotSize` em apartamentos; outras podem refletir falhas de recolha ou anúncios incompletos.
-
-| Variável | Valores em falta | Percentagem |
-|---|---:|---:|
-| `ConservationStatus` | 116 244 | 85,77% |
-| `BuiltArea` | 108 919 | 80,36% |
-| `GrossArea` | 107 898 | 79,61% |
-| `Floor` | 107 607 | 79,39% |
-| `PublishDate` | 106 297 | 78,43% |
-| `LotSize` | 95 953 | 70,80% |
-| `NumberOfBedrooms` | 88 495 | 65,29% |
-| `NumberOfWC` | 78 280 | 57,76% |
-| `EnergyEfficiencyLevel` | 68 247 | 50,35% |
-| `LivingArea` | 30 584 | 22,57% |
-| `TotalArea` | 8 383 | 6,19% |
-| `NumberOfBathrooms` | 6 836 | 5,04% |
-| `Price` | 300 | 0,22% |
-
-Antes da modelação, a imputação deve ser definida por tipo de variável e por contexto. Não é estatisticamente adequado aplicar uma imputação uniforme a todas as colunas.
-
-Recomendações:
-
-- Remover registos sem `Price` apenas na base de treino/análise, porque `Price` é a variável alvo.
-- Criar indicadores de ausência de dados para variáveis com ausência potencialmente informativa.
-- Avaliar ausência de dados por `Type`, `District` e `City` antes de imputar áreas, divisões ou datas.
-- Evitar imputar variáveis com mais de 70% de ausência sem testar se acrescentam valor preditivo real.
-
-## Valores Inválidos ou Suspeitos
-
-Foram confirmados valores não positivos em variáveis de área:
-
-| Variável | Registos não nulos | Valores `<= 0` | Percentagem nos não nulos |
+| Variável | Pares válidos | Pearson | Spearman |
 |---|---:|---:|---:|
-| `TotalArea` | 127 153 | 933 | 0,73% |
-| `GrossArea` | 27 638 | 331 | 1,20% |
-| `LivingArea` | 104 952 | 400 | 0,38% |
-| `LotSize` | 39 583 | 626 | 1,58% |
-| `BuiltArea` | 26 617 | 243 | 0,91% |
+| `number_of_bathrooms` | 119 743 | 0,504 | 0,594 |
+| `amenity_count` | 126 242 | 0,387 | 0,446 |
+| `number_of_bedrooms` | 43 656 | 0,424 | 0,435 |
+| `total_rooms` | 68 605 | 0,085 | 0,430 |
+| `bathrooms_per_bedroom` | 39 320 | 0,184 | 0,419 |
+| `parking` | 126 096 | 0,322 | 0,377 |
+| `construction_year` | 83 118 | 0,314 | 0,370 |
+| `property_age` | 83 118 | -0,314 | -0,370 |
+| `construction_decade` | 83 118 | 0,314 | 0,364 |
+| `rooms_per_bathroom` | 59 085 | -0,206 | -0,297 |
+| `missing_core_feature_count` | 126 242 | -0,279 | -0,282 |
+| `bedrooms_per_room` | 20 512 | 0,237 | 0,275 |
 
-Áreas iguais ou inferiores a zero não são coerentes com a interpretação física destas variáveis. Devem ser convertidas para valores em falta ou removidas apenas numa versão processada, com regra documentada.
+Interpretação:
 
-## Comparação Entre Grupos
+- casas de banho, quartos, divisões, estacionamento e amenidades apresentam associação positiva com `log_price`;
+- imóveis mais recentes tendem a apresentar preços anunciados superiores, enquanto `property_age` tem associação negativa;
+- maior falta de informação em variáveis centrais está associada a preços mais baixos, o que pode indicar segmentos menos completos ou anúncios de menor qualidade;
+- estas associações não devem ser interpretadas como efeitos causais.
 
-As comparações entre grupos devem usar estatísticas robustas e considerar tamanhos amostrais desiguais. Os tipos de imóvel têm distribuições muito diferentes, pelo que comparar médias globais pode produzir conclusões enganadoras.
+## Diferenças Entre Grupos
 
-| `Type` | Registos com `Price` | Mediana de `Price` | Média de `Price` | P95 |
-|---|---:|---:|---:|---:|
-| Apartment | 47 236 | 280 000 | 371 592,05 | 914 859,75 |
-| House | 36 652 | 259 250 | 453 562,55 | 1 300 000 |
-| Land | 31 820 | 65 000 | 194 359,95 | 790 000 |
-| Store | 5 325 | 130 000 | 239 697,78 | 750 000 |
-| Farm | 3 883 | 265 000 | 596 948,85 | 2 200 000 |
-| Building | 2 482 | 550 000 | 853 169,73 | 2 700 000 |
+Foi usado o teste de Kruskal-Wallis sobre `log_price`, com grupos de dimensão mínima adequada. Os valores-p são muito pequenos devido ao tamanho da amostra, por isso a interpretação deve privilegiar `epsilon_squared`.
 
-Também existem diferenças relevantes por distrito:
+| Variável categórica | Grupos | N | Epsilon squared | Interpretação |
+|---|---:|---:|---:|---|
+| `type` | 14 | 125 528 | 0,257 | Diferenças relevantes por tipologia |
+| `energy_certificate` | 10 | 126 170 | 0,224 | Diferenças relevantes por certificação energética |
+| `district` | 17 | 125 755 | 0,198 | Diferenças relevantes por distrito |
+| `property_age_group` | 5 | 83 118 | 0,138 | Diferenças moderadas por grupo de idade |
 
-| `District` | Registos com `Price` | Mediana de `Price` | P95 |
-|---|---:|---:|---:|
-| Lisboa | 31 328 | 350 000 | 1 800 000 |
-| Porto | 22 618 | 260 000 | 950 000 |
-| Setúbal | 11 573 | 280 000 | 1 150 000 |
-| Braga | 11 385 | 189 500 | 600 000 |
-| Faro | 8 915 | 290 000 | 1 700 000 |
+Conclusão:
 
-Estas diferenças são descritivas. Não provam que o tipo de imóvel ou o distrito causem determinado preço, porque há confundimento provável com área, localização específica, estado, data, segmento de mercado e qualidade do anúncio.
+- `type`, `district` e `energy_certificate` devem ser considerados variáveis importantes para modelação;
+- a codificação destas categorias deve ser feita dentro da pipeline de treino;
+- categorias raras devem ser agregadas ou tratadas antes de modelos sensíveis a alta cardinalidade.
 
-Para comparação formal entre grupos, recomenda-se:
+## Multicolinearidade
 
-- Usar mediana, IQR e percentis, não apenas média.
-- Aplicar transformação `log(price)` quando fizer sentido.
-- Usar testes não paramétricos ou modelos robustos se as distribuições continuarem assimétricas.
-- Reportar tamanho do efeito e intervalos de confiança, não apenas valores-p.
-- Fazer comparações dentro de grupos comparáveis, por exemplo apartamentos com apartamentos, e não todos os imóveis em conjunto.
+Foi calculado VIF para variáveis numéricas candidatas. Nos campos avaliados, os maiores valores ficaram abaixo de 2,5:
 
-## Correlações Futuras
-
-As correlações preliminares calculadas diretamente sobre a base bruta mostram que Pearson é muito sensível aos valores extremos. Em várias variáveis, Pearson fica próximo de zero enquanto Spearman sugere associação monotónica mais clara.
-
-| Variável | N pares válidos | Pearson com `Price` | Spearman com `Price` |
-|---|---:|---:|---:|
-| `NumberOfBathrooms` | 128 402 | 0,057 | 0,597 |
-| `NumberOfBedrooms` | 46 908 | 0,344 | 0,435 |
-| `TotalRooms` | 73 058 | 0,010 | 0,430 |
-| `Parking` | 135 042 | 0,032 | 0,381 |
-| `ConstructionYear` | 87 866 | 0,017 | 0,372 |
-| `LivingArea` | 104 683 | 0,006 | 0,254 |
-| `TotalArea` | 126 859 | -0,000 | 0,057 |
-| `LotSize` | 39 499 | 0,028 | -0,032 |
-
-Estas correlações são apenas exploratórias. Devem ser recalculadas depois da limpeza, remoção de duplicados, tratamento de valores inválidos e eventual transformação logarítmica. Também devem ser segmentadas por `Type`, porque uma área de terreno e uma área de apartamento não têm o mesmo significado económico.
-
-Cuidados adicionais:
-
-- Não usar `price_m2` como preditor direto de `Price`, porque contém a própria variável alvo.
-- Verificar relações não lineares com gráficos e modelos flexíveis.
-- Avaliar multicolinearidade entre áreas e contagens de divisões.
-- Não interpretar correlação como causalidade.
-
-## Preço por Metro Quadrado
-
-Para registos com `Price > 0` e `TotalArea > 0`, existem 125 928 rácios válidos de `Price / TotalArea`.
-
-| Estatística de `Price / TotalArea` | Valor |
+| Variável | VIF |
 |---|---:|
-| Percentil 1 | 1,27 |
-| Percentil 5 | 8,36 |
-| Percentil 25 | 283,04 |
-| Mediana | 1 483,52 |
-| Percentil 75 | 2 954,55 |
-| Percentil 95 | 6 117,84 |
-| Percentil 99 | 9 832,92 |
-| Percentil 99,9 | 23 823,43 |
-| Máximo | 5 000 000 |
+| `number_of_bathrooms` | 2,23 |
+| `log_living_area` | 1,95 |
+| `log_total_area` | 1,79 |
+| `living_area` | 1,76 |
+| `total_rooms` | 1,70 |
+| `missing_core_feature_count` | 1,55 |
+| `number_of_bedrooms` | 1,52 |
+| `rooms_per_bathroom` | 1,50 |
 
-Foram observados 6 976 registos com menos de 10 euros por metro quadrado e 174 registos com mais de 20 000 euros por metro quadrado. Estes valores devem ser analisados antes de usar `price_m2` em relatórios exploratórios. Podem resultar de áreas incorretas, preços simbólicos, tipos de imóvel não comparáveis ou erros de unidade.
+Não há sinal forte de multicolinearidade problemática neste conjunto reduzido de variáveis. Ainda assim, áreas originais, áreas logarítmicas e rácios devem ser usados com cuidado em modelos lineares, porque podem representar informação parcialmente redundante.
 
-## Cuidados de Causalidade
+## Artefactos Gerados
 
-Este dataset é observacional e baseado em anúncios. Por isso, a análise deve evitar linguagem causal.
+| Artefacto | Caminho |
+|---|---|
+| Distribuição de `price` e `log_price` | `reports/figures/05_price_distribution.png` |
+| Top correlações Spearman | `reports/figures/05_top_spearman_correlations.png` |
+| Correlação Spearman | `reports/figures/05_spearman_correlation_heatmap.png` |
+| `log_price` por tipo de imóvel | `reports/figures/05_log_price_by_type.png` |
+| Resumo de preço | `reports/statistical_outputs/05_price_summary.csv` |
+| Correlações numéricas | `reports/statistical_outputs/05_numeric_correlations.csv` |
+| Testes categóricos | `reports/statistical_outputs/05_categorical_tests.csv` |
+| VIF | `reports/statistical_outputs/05_vif_summary.csv` |
 
-Formulações adequadas:
-
-- "Anúncios em Lisboa apresentam mediana de preço superior à mediana global."
-- "Existe associação positiva entre número de casas de banho e preço anunciado."
-- "A distribuição de preços difere entre tipos de imóvel."
-
-Formulações a evitar:
-
-- "Estar em Lisboa aumenta o preço."
-- "Ter elevador causa preço mais alto."
-- "Mais casas de banho fazem o imóvel valorizar."
-
-Para sustentar afirmações causais seriam necessários desenho causal, variáveis de controlo adequadas, estratégia de identificação e discussão explícita de confundimento.
-
-## Recomendações Antes da Modelação
+## Recomendações Para Modelação
 
 Antes de treinar modelos, recomenda-se:
 
-1. Criar uma versão processada em `data/processed/`, mantendo `data/raw/` intacto.
-2. Remover duplicados exatos apenas na versão processada.
-3. Remover ou isolar registos sem `Price` para treino supervisionado.
-4. Converter valores não positivos em áreas para valores em falta.
-5. Criar regras explícitas para valores extremos, preferencialmente por `Type` e localização.
-6. Avaliar `log(price)` como variável alvo transformada ou métrica auxiliar.
-7. Separar treino, validação e teste antes de imputações aprendidas nos dados.
-8. Ajustar imputadores, scalers e encoders apenas no conjunto de treino.
-9. Tratar categorias raras em `Type`, `City` e `Town` para reduzir instabilidade.
-10. Excluir variáveis derivadas de `Price`, como `price_m2`, dos preditores diretos.
-11. Documentar todas as decisões estatísticas no pipeline reprodutível.
+1. Usar `log_price` como alvo candidato e comparar com modelação direta de `price`.
+2. Excluir `price_m2`, `price_iqr_outlier` e `price_m2_iqr_outlier` como preditores diretos.
+3. Fazer imputação, encoding e scaling dentro de pipelines ajustadas apenas no conjunto de treino.
+4. Tratar categorias raras em `city`, `town`, `district_type` e `city_type`.
+5. Usar validação com métricas interpretáveis, como MAE e RMSE em euros.
+6. Comparar um baseline simples antes de modelos mais complexos.
+7. Manter linguagem não causal nas conclusões.
 
 ## Conclusão
 
-A base tem dimensão suficiente para análise estatística e modelação, mas apresenta assimetria extrema em `Price`, valores extremos em áreas, ausência de dados elevada em várias variáveis e duplicados exatos. As descritivas atuais estão globalmente corretas, mas devem ser comunicadas com foco em métricas robustas.
+A validação estatística confirma que existe sinal útil nas variáveis físicas, amenidades, localização, tipologia, certificação energética e idade do imóvel. Também confirma que `price` é altamente assimétrico e que a modelação deve considerar `log_price`.
 
-O próximo passo estatisticamente seguro é construir uma base processada com regras explícitas de limpeza, mantendo rastreabilidade das decisões e evitando interpretações causais sem suporte metodológico.
+O próximo passo recomendado é criar `06_modeling_baseline.ipynb`, com separação treino/teste e pipelines locais de imputação, encoding e treino de modelos baseline.
